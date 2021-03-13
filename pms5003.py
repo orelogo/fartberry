@@ -24,21 +24,33 @@ AirQuality = namedtuple('AirQuality', [
     'particles_10',
 ])
 
-BYTE_COUNT: int = 32
-FIRST_BYTE: int = 0x42
-SECOND_BYTE: int = 0x4d
+BYTE_COUNT = 32
+FIRST_BYTE = 0x42
+SECOND_BYTE = 0x4d
+FRAME_LENGTH = 28
 
-port = serial.Serial("/dev/ttyAMA0", baudrate=9600, timeout=3.0)
+
+def verify_data(data: bytes) -> None:
+    frame_length = int.from_bytes(data[2:4], byteorder='big')
+    check_sum_expected = int.from_bytes(data[30:32], byteorder='big')
+    check_sum_calculated = 0
+    for i in range(0, BYTE_COUNT - 2):
+        check_sum_calculated += data[i]
+
+    assert (data[0] == FIRST_BYTE
+            and data[1] == SECOND_BYTE
+            and frame_length == FRAME_LENGTH
+            and check_sum_calculated == check_sum_expected), "Unexpected data received from sensor"
 
 
+serial_port = serial.Serial("/dev/ttyAMA0", baudrate=9600, timeout=3.0)
 abs_log_path = path.join(path.dirname(__file__), "pms5003_log.txt")
 log = open(abs_log_path, "a+")
 
 try:
     while True:
-        data: bytes = port.read(BYTE_COUNT)
-
-        assert data[0] == FIRST_BYTE and data[1] == SECOND_BYTE, "Unexpected data received from sensor"
+        data = serial_port.read(BYTE_COUNT)
+        verify_data(data)
 
         air_quality = AirQuality(
             pm1_standard=int.from_bytes(data[4:6], byteorder='big'),
@@ -55,7 +67,7 @@ try:
             particles_10=int.from_bytes(data[26:28], byteorder='big'),
         )
 
-        log.write(f"{str(datetime.datetime.now())} - {air_quality} \n") 
+        log.write(f"{str(datetime.datetime.now())} - {air_quality} \n")
         log.flush()
         print(f"{str(datetime.datetime.now())} - {air_quality}")
 
