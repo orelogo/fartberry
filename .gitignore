@@ -1,2 +1,3 @@
 pms5003_log.txt
 .mypy_cache/
+__pycache__/
