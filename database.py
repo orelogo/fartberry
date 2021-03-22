@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 import psycopg2
 import constants
+from config import Config
 
 
 class Database():
-    DATABASE = 'fartberry'
     TABLE = 'air_quality'
-    USER = 'pi'
 
     def __init__(self) -> None:
+        config = Config()
         self.connection = psycopg2.connect(
-            database=self.DATABASE, user=self.USER)
+            database=config.postgres_database, user=config.postgres_user)
         self.connection.autocommit = True
         self.cur = self.connection.cursor()
 

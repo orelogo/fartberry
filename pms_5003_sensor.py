@@ -11,7 +11,7 @@ class Pms5003Sensor():
     FRAME_LENGTH = 28
     MAX_ATTEMPTS = 3
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.connection = Serial(self.DEVICE, baudrate=9600, timeout=3.0)
 
     def _read_sensor(self) -> bytes:
@@ -34,7 +34,7 @@ class Pms5003Sensor():
         raise IOError(
             f"Unexpected data received from sensor, even after {self.MAX_ATTEMPTS} attempts")
 
-    def getParticulateMatter(self) -> constants.ParticulateMatter:
+    def get_particulate_matter(self) -> constants.ParticulateMatter:
         data = self._read_sensor()
 
         particulate_matter = constants.ParticulateMatter(
