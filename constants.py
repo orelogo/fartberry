@@ -2,8 +2,6 @@
 
 from collections import namedtuple
 
-TIMESTAMP = "timestamp"
-
 # PM 1.0 concentration in μg/m^3, corrected to standard atmophere conditions
 PM1_STANDARD = "pm1_standard"
 # PM 2.5 concentration in μg/m^3, corrected to standard atmophere conditions

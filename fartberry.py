@@ -23,7 +23,7 @@ try:
         log.write(f"{str(timestamp)} - {particulate_matter}\n")
         log.flush()
         print(f"{str(timestamp)} - {particulate_matter}\n")
-        
+
         time.sleep(config.polling_frequency_in_sec)
 
 finally:
