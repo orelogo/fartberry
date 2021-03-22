@@ -29,8 +29,7 @@ PARTICLES_5 = "particles_5"
 # number of particles with diameter >10.0 μm in 0.1 L (0.0001 m^3) of air
 PARTICLES_10 = "particles_10"
 
-AirQuality = namedtuple("AirQuality", [
-    TIMESTAMP,
+ParticulateMatter = namedtuple("ParticulateMatter", [
     PM1_STANDARD,
     PM25_STANDARD,
     PM10_STANDARD,
