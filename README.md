@@ -1,5 +1,5 @@
 # Fartberry
-Raspberry pi air quality monitor
+Raspberry pi air quality monitor. Measures particulate matter in the air and stores values in Postgres SQL database along with geolocation data.
 
 ## Instructions
 1. Install postgres database on raspberry pi and create a database for this project
