@@ -1,30 +1,44 @@
 #!/usr/bin/env python3
 import psycopg2
+from datetime import datetime
 import constants
 from config import Config
 import geo
 
+TABLE_GEO = 'geo'
+TABLE_AIR_QUALITY = 'air_quality'
+TIMESTAMP = "timestamp"
+
 
 class Database():
-    TABLE = 'air_quality'
-    TIMESTAMP = "timestamp"
 
     def __init__(self) -> None:
         config = Config()
-        self.connection = psycopg2.connect(
+        self.conn = psycopg2.connect(
             database=config.postgres_database, user=config.postgres_user)
-        self.connection.autocommit = True
-        self.cur = self.connection.cursor()
+        self.conn.autocommit = True
+        self.cur = self.conn.cursor()
 
-        self.cur.execute(f"""CREATE TABLE IF NOT EXISTS {self.TABLE} (
-                            id serial PRIMARY KEY,
-                            {self.TIMESTAMP} TIMESTAMP WITH TIME ZONE,
+        self._create_tables()
+        self._insert_geo()
+
+    def _create_tables(self) -> None:
+        self.cur.execute(f"""CREATE TABLE IF NOT EXISTS {TABLE_GEO} (
+                            {TIMESTAMP} TIMESTAMP WITH TIME ZONE,
                             {geo.LAT} FLOAT4,
                             {geo.LON} FLOAT4,
                             {geo.COUNTRY_CODE} CHAR(2),
                             {geo.REGION_NAME} VARCHAR,
                             {geo.CITY} VARCHAR,
                             {geo.ZIP} VARCHAR,
+                            PRIMARY KEY ({geo.LAT}, {geo.LON})
+                        );""")
+
+        self.cur.execute(f"""CREATE TABLE IF NOT EXISTS {TABLE_AIR_QUALITY} (
+                            id serial PRIMARY KEY,
+                            {TIMESTAMP} TIMESTAMP WITH TIME ZONE,
+                            {geo.LAT} FLOAT4,
+                            {geo.LON} FLOAT4,
                             {constants.PM1_STANDARD} INT2,
                             {constants.PM25_STANDARD} INT2,
                             {constants.PM10_STANDARD} INT2,
@@ -36,21 +50,43 @@ class Database():
                             {constants.PARTICLES_1} INT2,
                             {constants.PARTICLES_25} INT2,
                             {constants.PARTICLES_5} INT2,
-                            {constants.PARTICLES_10} INT2
+                            {constants.PARTICLES_10} INT2,
+                            FOREIGN KEY ({geo.LAT}, {geo.LON})
+                                REFERENCES {TABLE_GEO} ({geo.LAT}, {geo.LON})
                         );""")
+
+    def _insert_geo(self) -> None:
         self.geo = geo.Geo()
 
+        values = {TIMESTAMP: datetime.now(),
+                  **self.geo.data._asdict()}
+
+        self.cur.execute(f"""INSERT INTO {TABLE_GEO} (
+                                {TIMESTAMP},
+                                {geo.LAT},
+                                {geo.LON},
+                                {geo.COUNTRY_CODE},
+                                {geo.REGION_NAME},
+                                {geo.CITY},
+                                {geo.ZIP})
+                            VALUES (
+                                %(timestamp)s,
+                                %(lat)s,
+                                %(lon)s,
+                                %(country_code)s,
+                                %(region_name)s,
+                                %(city)s,
+                                %(zip)s
+                            ) ON CONFLICT DO NOTHING;""",
+                         values)
+
     def insert(self, timestamp, particulate_matter: constants.ParticulateMatter) -> None:
-        values = {self.TIMESTAMP: timestamp,
+        values = {TIMESTAMP: timestamp,
                   **self.geo.data._asdict(),
                   **particulate_matter._asdict()}
 
-        self.cur.execute(f"""INSERT INTO {self.TABLE} (
-                            {self.TIMESTAMP},
-                            {geo.COUNTRY_CODE},
-                            {geo.REGION_NAME},
-                            {geo.CITY},
-                            {geo.ZIP},
+        self.cur.execute(f"""INSERT INTO {TABLE_AIR_QUALITY} (
+                            {TIMESTAMP},
                             {geo.LAT},
                             {geo.LON},
                             {constants.PM1_STANDARD},
@@ -67,10 +103,6 @@ class Database():
                             {constants.PARTICLES_10})
                         VALUES (
                             %(timestamp)s,
-                            %(country_code)s,
-                            %(region_name)s,
-                            %(city)s,
-                            %(zip)s,
                             %(lat)s,
                             %(lon)s,
                             %(pm1_standard)s,
@@ -89,4 +121,4 @@ class Database():
 
     def close(self) -> None:
         self.cur.close()
-        self.connection.close()
+        self.conn.close()
