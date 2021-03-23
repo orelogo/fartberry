@@ -23,7 +23,7 @@ class Database():
         self._insert_geo()
 
     def _create_tables(self) -> None:
-        self.cur.execute(f"""CREATE TABLE IF NOT EXISTS {TABLE_GEO} (
+        self.cur.execute(f'''CREATE TABLE IF NOT EXISTS {TABLE_GEO} (
                             {TIMESTAMP} TIMESTAMP WITH TIME ZONE,
                             {geo.LAT} FLOAT4,
                             {geo.LON} FLOAT4,
@@ -32,9 +32,9 @@ class Database():
                             {geo.CITY} VARCHAR,
                             {geo.ZIP} VARCHAR,
                             PRIMARY KEY ({geo.LAT}, {geo.LON})
-                        );""")
+                        );''')
 
-        self.cur.execute(f"""CREATE TABLE IF NOT EXISTS {TABLE_AIR_QUALITY} (
+        self.cur.execute(f'''CREATE TABLE IF NOT EXISTS {TABLE_AIR_QUALITY} (
                             id serial PRIMARY KEY,
                             {TIMESTAMP} TIMESTAMP WITH TIME ZONE,
                             {geo.LAT} FLOAT4,
@@ -53,7 +53,7 @@ class Database():
                             {constants.PARTICLES_10} INT2,
                             FOREIGN KEY ({geo.LAT}, {geo.LON})
                                 REFERENCES {TABLE_GEO} ({geo.LAT}, {geo.LON})
-                        );""")
+                        );''')
 
     def _insert_geo(self) -> None:
         self.geo = geo.Geo()
@@ -61,7 +61,7 @@ class Database():
         values = {TIMESTAMP: datetime.now(),
                   **self.geo.data._asdict()}
 
-        self.cur.execute(f"""INSERT INTO {TABLE_GEO} (
+        self.cur.execute(f'''INSERT INTO {TABLE_GEO} (
                                 {TIMESTAMP},
                                 {geo.LAT},
                                 {geo.LON},
@@ -77,7 +77,7 @@ class Database():
                                 %(region_name)s,
                                 %(city)s,
                                 %(zip)s
-                            ) ON CONFLICT DO NOTHING;""",
+                            ) ON CONFLICT DO NOTHING;''',
                          values)
 
     def insert(self, timestamp, particulate_matter: constants.ParticulateMatter) -> None:
@@ -85,7 +85,7 @@ class Database():
                   **self.geo.data._asdict(),
                   **particulate_matter._asdict()}
 
-        self.cur.execute(f"""INSERT INTO {TABLE_AIR_QUALITY} (
+        self.cur.execute(f'''INSERT INTO {TABLE_AIR_QUALITY} (
                             {TIMESTAMP},
                             {geo.LAT},
                             {geo.LON},
@@ -117,7 +117,7 @@ class Database():
                             %(particles_25)s,
                             %(particles_5)s,
                             %(particles_10)s
-                        );""", values)
+                        );''', values)
 
     def close(self) -> None:
         self.cur.close()
