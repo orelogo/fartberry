@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import requests
+import logging
 from collections import namedtuple
 
 COUNTRY = 'country'
@@ -31,18 +32,25 @@ class Geo():
     URL = 'http://www.ip-api.com/json'  # HTTPS not available in free version
 
     def __init__(self):
-        resp = requests.get(self.URL).json()
-        self.data = GeoData(
-            **{
-                COUNTRY: resp['country'],
-                COUNTRY_CODE: resp['countryCode'],
-                REGION: resp['region'],
-                REGION_NAME: resp['regionName'],
-                CITY: resp['city'],
-                ZIP: resp['zip'],
-                LAT: resp['lat'],
-                LON: resp['lon'],
-                TIMEZONE: resp['timezone'],
-                IPV4: resp['query'],
-            }
-        )
+
+        try:
+            resp = requests.get(self.URL).json()
+            self.data = GeoData(
+                **{
+                    COUNTRY: resp['country'],
+                    COUNTRY_CODE: resp['countryCode'],
+                    REGION: resp['region'],
+                    REGION_NAME: resp['regionName'],
+                    CITY: resp['city'],
+                    ZIP: resp['zip'],
+                    LAT: resp['lat'],
+                    LON: resp['lon'],
+                    TIMEZONE: resp['timezone'],
+                    IPV4: resp['query'],
+                }
+            )
+            logging.info(self.data)
+
+        except Exception as ex:
+            logging.exception(ex)
+            self.data = None

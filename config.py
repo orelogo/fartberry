@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-from os import path
 import json
+from os import path
 
 POSTGRES_USER = 'postgres_user'
 POSTGRES_DATABASE = 'postgres_database'

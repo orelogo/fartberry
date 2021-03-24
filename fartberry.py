@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
+import logging
+import signal
+import sys
+import time
 from datetime import datetime
 from os import path
-import time
-import logging
-import sys
-import signal
 
 import constants
+from config import Config
 from database import Database
 from pms_5003_sensor import Pms5003Sensor
-from config import Config
 
 logging.basicConfig(filename='fartberry.log', level=logging.DEBUG, format='%(asctime)s:%(levelname)s - %(message)s')
 
@@ -19,18 +19,18 @@ particulate_matter_sensor = Pms5003Sensor()
 
 def signal_handler(signal, frame):
     database.close()
-    logger.info('Closing program')
+    logging.info('Closing program')
     print('Closing program')
     sys.exit(0)
 
-signal.signal(signal.SIGINT, signal_handler)
+signal.signal(signal.SIGINT, signal_handler) # handle ctrl-c
 
 
 
 while True:
     try:
         particulate_matter = particulate_matter_sensor.get_particulate_matter()
-        timestamp = datetime.now()
+        timestamp = datetime.now() # TODO - have postgres handle timestamps??? HWY says NO
 
         database.insert(timestamp, particulate_matter)
         logging.info(particulate_matter)

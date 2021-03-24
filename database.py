@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-import psycopg2
 from datetime import datetime
+
+import psycopg2
+
 import constants
-from config import Config
 import geo
+from config import Config
 
 TABLE_GEO = 'geo'
 TABLE_AIR_QUALITY = 'air_quality'
@@ -11,7 +13,6 @@ TIMESTAMP = "timestamp"
 
 
 class Database():
-
     def __init__(self) -> None:
         config = Config()
         self.conn = psycopg2.connect(
@@ -58,32 +59,39 @@ class Database():
     def _insert_geo(self) -> None:
         self.geo = geo.Geo()
 
-        values = {TIMESTAMP: datetime.now(),
-                  **self.geo.data._asdict()}
+        if (self.geo.data):
+            values = {TIMESTAMP: datetime.now(),
+                      **self.geo.data._asdict()}
 
-        self.cur.execute(f'''INSERT INTO {TABLE_GEO} (
-                                {TIMESTAMP},
-                                {geo.LAT},
-                                {geo.LON},
-                                {geo.COUNTRY_CODE},
-                                {geo.REGION_NAME},
-                                {geo.CITY},
-                                {geo.ZIP})
-                            VALUES (
-                                %(timestamp)s,
-                                %(lat)s,
-                                %(lon)s,
-                                %(country_code)s,
-                                %(region_name)s,
-                                %(city)s,
-                                %(zip)s
-                            ) ON CONFLICT DO NOTHING;''',
-                         values)
+            self.cur.execute(f'''INSERT INTO {TABLE_GEO} (
+                                    {TIMESTAMP},
+                                    {geo.LAT},
+                                    {geo.LON},
+                                    {geo.COUNTRY_CODE},
+                                    {geo.REGION_NAME},
+                                    {geo.CITY},
+                                    {geo.ZIP})
+                                VALUES (
+                                    %(timestamp)s,
+                                    %(lat)s,
+                                    %(lon)s,
+                                    %(country_code)s,
+                                    %(region_name)s,
+                                    %(city)s,
+                                    %(zip)s
+                                ) ON CONFLICT DO NOTHING;''',
+                             values)
 
     def insert(self, timestamp, particulate_matter: constants.ParticulateMatter) -> None:
-        values = {TIMESTAMP: timestamp,
-                  **self.geo.data._asdict(),
-                  **particulate_matter._asdict()}
+        if (self.geo.data):
+            values = {TIMESTAMP: timestamp,
+                      **self.geo.data._asdict(),
+                      **particulate_matter._asdict()}
+        else:
+            values = {TIMESTAMP: timestamp,
+                      geo.LAT: None,
+                      geo.LON: None,
+                      **particulate_matter._asdict()}
 
         self.cur.execute(f'''INSERT INTO {TABLE_AIR_QUALITY} (
                             {TIMESTAMP},
