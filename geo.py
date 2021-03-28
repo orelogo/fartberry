@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-import requests
 import logging
 from collections import namedtuple
+
+import requests
 
 COUNTRY = 'country'
 COUNTRY_CODE = 'country_code'  # two-letter country code ISO 3166-1 alpha-2, eg. US
@@ -27,26 +28,27 @@ GeoData = namedtuple('GeoData', [
     IPV4
 ])
 
+URL = 'http://www.ip-api.com/json'  # HTTPS not available in free version
+
 
 class Geo():
-    URL = 'http://www.ip-api.com/json'  # HTTPS not available in free version
-
     def __init__(self):
-
         try:
-            resp = requests.get(self.URL).json()
+            resp = requests.get(URL)
+            resp.raise_for_status()
+            json = resp.json()
             self.data = GeoData(
                 **{
-                    COUNTRY: resp['country'],
-                    COUNTRY_CODE: resp['countryCode'],
-                    REGION: resp['region'],
-                    REGION_NAME: resp['regionName'],
-                    CITY: resp['city'],
-                    ZIP: resp['zip'],
-                    LAT: resp['lat'],
-                    LON: resp['lon'],
-                    TIMEZONE: resp['timezone'],
-                    IPV4: resp['query'],
+                    COUNTRY: json['country'],
+                    COUNTRY_CODE: json['countryCode'],
+                    REGION: json['region'],
+                    REGION_NAME: json['regionName'],
+                    CITY: json['city'],
+                    ZIP: json['zip'],
+                    LAT: json['lat'],
+                    LON: json['lon'],
+                    TIMEZONE: json['timezone'],
+                    IPV4: json['query'],
                 }
             )
             logging.info(self.data)

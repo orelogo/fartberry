@@ -14,14 +14,16 @@ TIMESTAMP = "timestamp"
 
 class Database():
     def __init__(self) -> None:
-        config = Config()
+        self.config = Config()
         self.conn = psycopg2.connect(
-            database=config.postgres_database, user=config.postgres_user)
+            database=self.config.postgres_database, user=self.config.postgres_user)
         self.conn.autocommit = True
         self.cur = self.conn.cursor()
-
         self._create_tables()
-        self._insert_geo()
+        self.geo = geo.Geo() if self.config.is_geolocation_enabled else None
+        
+        if (self.geo):
+            self._create_and_insert_geo()
 
     def _create_tables(self) -> None:
         self.cur.execute(f'''CREATE TABLE IF NOT EXISTS {TABLE_GEO} (
@@ -35,29 +37,28 @@ class Database():
                             PRIMARY KEY ({geo.LAT}, {geo.LON})
                         );''')
 
-        self.cur.execute(f'''CREATE TABLE IF NOT EXISTS {TABLE_AIR_QUALITY} (
-                            id serial PRIMARY KEY,
-                            {TIMESTAMP} TIMESTAMP WITH TIME ZONE,
-                            {geo.LAT} FLOAT4,
-                            {geo.LON} FLOAT4,
-                            {constants.PM1_STANDARD} INT2,
-                            {constants.PM25_STANDARD} INT2,
-                            {constants.PM10_STANDARD} INT2,
-                            {constants.PM1_AMBIENT} INT2,
-                            {constants.PM25_AMBIENT} INT2,
-                            {constants.PM10_AMBIENT} INT2,
-                            {constants.PARTICLES_03} INT2,
-                            {constants.PARTICLES_05} INT2,
-                            {constants.PARTICLES_1} INT2,
-                            {constants.PARTICLES_25} INT2,
-                            {constants.PARTICLES_5} INT2,
-                            {constants.PARTICLES_10} INT2,
-                            FOREIGN KEY ({geo.LAT}, {geo.LON})
-                                REFERENCES {TABLE_GEO} ({geo.LAT}, {geo.LON})
-                        );''')
 
-    def _insert_geo(self) -> None:
-        self.geo = geo.Geo()
+    def _create_and_insert_geo(self) -> None:
+        self.cur.execute(f'''CREATE TABLE IF NOT EXISTS {TABLE_AIR_QUALITY} (
+                    id serial PRIMARY KEY,
+                    {TIMESTAMP} TIMESTAMP WITH TIME ZONE,
+                    {geo.LAT} FLOAT4,
+                    {geo.LON} FLOAT4,
+                    {constants.PM1_STANDARD} INT2,
+                    {constants.PM25_STANDARD} INT2,
+                    {constants.PM10_STANDARD} INT2,
+                    {constants.PM1_AMBIENT} INT2,
+                    {constants.PM25_AMBIENT} INT2,
+                    {constants.PM10_AMBIENT} INT2,
+                    {constants.PARTICLES_03} INT2,
+                    {constants.PARTICLES_05} INT2,
+                    {constants.PARTICLES_1} INT2,
+                    {constants.PARTICLES_25} INT2,
+                    {constants.PARTICLES_5} INT2,
+                    {constants.PARTICLES_10} INT2,
+                    FOREIGN KEY ({geo.LAT}, {geo.LON})
+                        REFERENCES {TABLE_GEO} ({geo.LAT}, {geo.LON})
+                );''')
 
         if (self.geo.data):
             values = {TIMESTAMP: datetime.now(),
@@ -83,7 +84,7 @@ class Database():
                              values)
 
     def insert(self, timestamp, particulate_matter: constants.ParticulateMatter) -> None:
-        if (self.geo.data):
+        if (self.geo and self.geo.data):
             values = {TIMESTAMP: timestamp,
                       **self.geo.data._asdict(),
                       **particulate_matter._asdict()}
