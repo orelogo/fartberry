@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-import logging
+
 from collections import namedtuple
 
 import requests
 
 from config import config
+from logger import logger
 
 COUNTRY = 'country'
 COUNTRY_CODE = 'country_code'  # two-letter country code ISO 3166-1 alpha-2, eg. US
@@ -37,7 +38,7 @@ class Geo():
     def __init__(self):
         if (not config.is_geolocation_enabled):
             self.data = None
-            logging.info('Geolocation disabled')
+            logger.info('Geolocation disabled')
             return
 
         try:
@@ -58,8 +59,8 @@ class Geo():
                     IPV4: json['query'],
                 }
             )
-            logging.info(self.data)
+            logger.info(self.data)
 
         except Exception as ex:
-            logging.exception(ex)
+            logger.exception(ex)
             self.data = None

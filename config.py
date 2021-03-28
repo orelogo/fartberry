@@ -2,6 +2,8 @@
 import json
 from os import path
 
+from logger import logger
+
 POSTGRES_USER = 'postgres_user'
 POSTGRES_DATABASE = 'postgres_database'
 IS_GEOLOCATION_ENABLED = 'is_geolocation_enabled'
@@ -18,5 +20,7 @@ class _Config():
         self.postgres_database = config_json[POSTGRES_DATABASE]
         self.is_geolocation_enabled = config_json[IS_GEOLOCATION_ENABLED]
         self.polling_frequency_in_sec = config_json[POLLING_FREQUENCY_IN_SEC]
+        logger.debug('Config loaded')
+
 
 config = _Config()

@@ -6,6 +6,7 @@ import psycopg2
 import geo
 import pms_5003_sensor
 from config import config
+from logger import logger
 
 TABLE_GEO = 'geo'
 TABLE_AIR_QUALITY = 'air_quality'
@@ -123,7 +124,8 @@ class Database():
                             %(particles_25)s,
                             %(particles_5)s,
                             %(particles_10)s
-                        );''', values)
+                        ); ''', values)
+        logger.debug('Air quality inserted into database')
 
     def close(self) -> None:
         self.cur.close()

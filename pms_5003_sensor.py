@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-import logging
 from collections import namedtuple
 
 from serial import Serial
+
+from logger import logger
 
 # PM 1.0 concentration in μg/m^3, corrected to standard atmophere conditions
 PM1_STANDARD = 'pm1_standard'
@@ -85,9 +86,9 @@ class Pms5003Sensor():
         bytes_to_read = BYTE_COUNT * 2 - 1
 
         data = self.connection.read(bytes_to_read)
-        logging.debug(self._bytes_to_str(data))
+        logger.debug(f'Raw data: {self._bytes_to_str(data)}')
         trimmed_data = self._get_in_frame_data(data)
-        logging.debug(self._bytes_to_str(trimmed_data))
+        logger.debug(f'Trimmed data: {self._bytes_to_str(trimmed_data)}')
 
         check_sum_expected = int.from_bytes(
             trimmed_data[30:32], byteorder='big')

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import logging
 import signal
 import sys
 import time
@@ -8,6 +7,7 @@ from os import path
 
 from config import config
 from database import Database
+from logger import logger
 from pms_5003_sensor import Pms5003Sensor
 
 
@@ -19,7 +19,7 @@ class Fartberry:
 
     def _signal_handler(self, signal, frame):
         self.database.close()
-        logging.info('Closing program')
+        logger.info('Closing program')
         print('Closing program')
         sys.exit(0)
 
@@ -28,21 +28,15 @@ class Fartberry:
             try:
                 particulate_matter = self.particulate_matter_sensor.get_particulate_matter()
                 timestamp = datetime.now()
-
+                logger.info(particulate_matter)
                 self.database.insert(timestamp, particulate_matter)
-                logging.info(particulate_matter)
-                print(f'{str(timestamp)} - {particulate_matter}\n')
-
             except Exception as e:
-                logging.exception(e)
+                logger.exception(e)
 
             time.sleep(config.polling_frequency_in_sec)
 
 
 def main():
-    logging.basicConfig(filename='fartberry.log', level=logging.DEBUG,
-                        format='%(asctime)s:%(levelname)s - %(message)s')
-
     fartberry = Fartberry()
     fartberry.run()
 
