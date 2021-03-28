@@ -8,36 +8,13 @@ DEVICE = '/dev/ttyAMA0'
 BYTE_COUNT = 32
 FIRST_BYTE = 0x42
 SECOND_BYTE = 0x4d
-FRAME_LENGTH = 0x1C
+FRAME_LENGTH = 0x1c
 MAX_ATTEMPTS = 3
 
 
 class Pms5003Sensor():
     def __init__(self) -> None:
         self.connection = Serial(DEVICE, baudrate=9600, timeout=3.0)
-
-    def _read_sensor(self) -> bytes:
-        # retries necessary because sometimes the inital sensor read does not align correctly
-        for i in range(MAX_ATTEMPTS):
-            data = self.connection.read(BYTE_COUNT)
-
-            frame_length = int.from_bytes(data[2:4], byteorder='big')
-            check_sum_expected = int.from_bytes(data[30:32], byteorder='big')
-            check_sum_calculated = 0
-            for i in range(0, BYTE_COUNT - 2):
-                check_sum_calculated += data[i]
-
-            if (data[0] == FIRST_BYTE
-                and data[1] == SECOND_BYTE
-                and frame_length == FRAME_LENGTH
-                    and check_sum_calculated == check_sum_expected):
-                return data
-            else:
-                logging.warning('Unexpected date received: ' +
-                                ' '.join(hex(byte) for byte in data))
-
-        raise IOError(
-            f'Unexpected data received from sensor, even after {MAX_ATTEMPTS} attempts')
 
     def get_particulate_matter(self) -> constants.ParticulateMatter:
         data = self._read_sensor()
@@ -60,3 +37,35 @@ class Pms5003Sensor():
         )
 
         return particulate_matter
+
+    def _read_sensor(self) -> bytes:
+        # assuming that we can't be sure where in the byte stream the read starts,
+        # this is the minimum number of bytes required to ensure we can capute an
+        # entire valid frame of data
+        bytes_to_read = BYTE_COUNT * 2 - 1
+
+        data = self.connection.read(bytes_to_read)
+        logging.debug(self._bytes_to_str(data))
+        trimmed_data = self._get_in_frame_data(data)
+        logging.debug(self._bytes_to_str(trimmed_data))
+
+        check_sum_expected = int.from_bytes(
+            trimmed_data[30:32], byteorder='big')
+        check_sum_calculated = 0
+        for i in range(0, BYTE_COUNT - 2):
+            check_sum_calculated += trimmed_data[i]
+
+        if (check_sum_calculated == check_sum_expected):
+            return trimmed_data
+        else:
+            raise IOError(f'Check sum failed: {self._bytes_to_str(trimmed_data)}')
+
+    def _get_in_frame_data(self, data: bytes) -> bytes:
+        starting_sequence = bytes(
+            [FIRST_BYTE, SECOND_BYTE, 0x00, FRAME_LENGTH])
+        start = data.index(starting_sequence)
+        end = start + BYTE_COUNT
+        return data[start:end]
+
+    def _bytes_to_str(self, data: bytes) -> str:
+        return ' '.join('0x{:02x}'.format(byte) for byte in data)
