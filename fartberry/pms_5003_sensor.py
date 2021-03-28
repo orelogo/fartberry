@@ -87,6 +87,10 @@ class _Pms5003Sensor():
 
         data = self.connection.read(bytes_to_read)
         logger.debug(f'Raw data: {self._bytes_to_str(data)}')
+        if (not data):
+            raise IOError(
+                f'No data received from sensor. Check that it is turned on.')
+
         trimmed_data = self._get_in_frame_data(data)
         logger.debug(f'Trimmed data: {self._bytes_to_str(trimmed_data)}')
 
