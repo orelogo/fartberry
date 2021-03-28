@@ -2,5 +2,5 @@
     "postgres_user": "pi",
     "postgres_database": "fartberry",
     "is_geolocation_enabled": true,
-    "polling_frequency_in_sec": 10
+    "polling_frequency_in_sec": 3
 }

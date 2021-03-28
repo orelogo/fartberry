@@ -6,7 +6,6 @@ import time
 from datetime import datetime
 from os import path
 
-import constants
 from config import Config
 from database import Database
 from pms_5003_sensor import Pms5003Sensor
@@ -42,7 +41,7 @@ class Fartberry:
 
 
 def main():
-    logging.basicConfig(filename='fartberry.log', level=logging.INFO,
+    logging.basicConfig(filename='fartberry.log', level=logging.DEBUG,
                         format='%(asctime)s:%(levelname)s - %(message)s')
 
     fartberry = Fartberry()

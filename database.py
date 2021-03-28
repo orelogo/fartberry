@@ -3,8 +3,8 @@ from datetime import datetime
 
 import psycopg2
 
-import constants
 import geo
+import pms_5003_sensor
 from config import Config
 
 TABLE_GEO = 'geo'
@@ -21,7 +21,7 @@ class Database():
         self.cur = self.conn.cursor()
         self._create_tables()
         self.geo = geo.Geo() if self.config.is_geolocation_enabled else None
-        
+
         if (self.geo):
             self._create_and_insert_geo()
 
@@ -37,25 +37,24 @@ class Database():
                             PRIMARY KEY ({geo.LAT}, {geo.LON})
                         );''')
 
-
     def _create_and_insert_geo(self) -> None:
         self.cur.execute(f'''CREATE TABLE IF NOT EXISTS {TABLE_AIR_QUALITY} (
                     id serial PRIMARY KEY,
                     {TIMESTAMP} TIMESTAMP WITH TIME ZONE,
                     {geo.LAT} FLOAT4,
                     {geo.LON} FLOAT4,
-                    {constants.PM1_STANDARD} INT2,
-                    {constants.PM25_STANDARD} INT2,
-                    {constants.PM10_STANDARD} INT2,
-                    {constants.PM1_AMBIENT} INT2,
-                    {constants.PM25_AMBIENT} INT2,
-                    {constants.PM10_AMBIENT} INT2,
-                    {constants.PARTICLES_03} INT2,
-                    {constants.PARTICLES_05} INT2,
-                    {constants.PARTICLES_1} INT2,
-                    {constants.PARTICLES_25} INT2,
-                    {constants.PARTICLES_5} INT2,
-                    {constants.PARTICLES_10} INT2,
+                    {pms_5003_sensor.PM1_STANDARD} INT2,
+                    {pms_5003_sensor.PM25_STANDARD} INT2,
+                    {pms_5003_sensor.PM10_STANDARD} INT2,
+                    {pms_5003_sensor.PM1_AMBIENT} INT2,
+                    {pms_5003_sensor.PM25_AMBIENT} INT2,
+                    {pms_5003_sensor.PM10_AMBIENT} INT2,
+                    {pms_5003_sensor.PARTICLES_03} INT2,
+                    {pms_5003_sensor.PARTICLES_05} INT2,
+                    {pms_5003_sensor.PARTICLES_1} INT2,
+                    {pms_5003_sensor.PARTICLES_25} INT2,
+                    {pms_5003_sensor.PARTICLES_5} INT2,
+                    {pms_5003_sensor.PARTICLES_10} INT2,
                     FOREIGN KEY ({geo.LAT}, {geo.LON})
                         REFERENCES {TABLE_GEO} ({geo.LAT}, {geo.LON})
                 );''')
@@ -83,7 +82,7 @@ class Database():
                                 ) ON CONFLICT DO NOTHING;''',
                              values)
 
-    def insert(self, timestamp, particulate_matter: constants.ParticulateMatter) -> None:
+    def insert(self, timestamp, particulate_matter: pms_5003_sensor.ParticulateMatter) -> None:
         if (self.geo and self.geo.data):
             values = {TIMESTAMP: timestamp,
                       **self.geo.data._asdict(),
@@ -98,18 +97,18 @@ class Database():
                             {TIMESTAMP},
                             {geo.LAT},
                             {geo.LON},
-                            {constants.PM1_STANDARD},
-                            {constants.PM25_STANDARD},
-                            {constants.PM10_STANDARD},
-                            {constants.PM1_AMBIENT},
-                            {constants.PM25_AMBIENT},
-                            {constants.PM10_AMBIENT},
-                            {constants.PARTICLES_03},
-                            {constants.PARTICLES_05},
-                            {constants.PARTICLES_1},
-                            {constants.PARTICLES_25},
-                            {constants.PARTICLES_5},
-                            {constants.PARTICLES_10})
+                            {pms_5003_sensor.PM1_STANDARD},
+                            {pms_5003_sensor.PM25_STANDARD},
+                            {pms_5003_sensor.PM10_STANDARD},
+                            {pms_5003_sensor.PM1_AMBIENT},
+                            {pms_5003_sensor.PM25_AMBIENT},
+                            {pms_5003_sensor.PM10_AMBIENT},
+                            {pms_5003_sensor.PARTICLES_03},
+                            {pms_5003_sensor.PARTICLES_05},
+                            {pms_5003_sensor.PARTICLES_1},
+                            {pms_5003_sensor.PARTICLES_25},
+                            {pms_5003_sensor.PARTICLES_5},
+                            {pms_5003_sensor.PARTICLES_10})
                         VALUES (
                             %(timestamp)s,
                             %(lat)s,
