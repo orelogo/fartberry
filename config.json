@@ -1,5 +1,5 @@
 {
     "postgres_user": "pi",
     "postgres_database": "fartberry",
-    "polling_frequency_in_sec": 900
+    "polling_frequency_in_sec": 10
 }
