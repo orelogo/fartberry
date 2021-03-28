@@ -3,7 +3,7 @@ from collections import namedtuple
 
 from serial import Serial
 
-from logger import logger
+from fartberry.logger import logger
 
 # PM 1.0 concentration in μg/m^3, corrected to standard atmophere conditions
 PM1_STANDARD = 'pm1_standard'
@@ -111,5 +111,6 @@ class _Pms5003Sensor():
 
     def _bytes_to_str(self, data: bytes) -> str:
         return ' '.join('0x{:02x}'.format(byte) for byte in data)
+
 
 pms_5003_sensor = _Pms5003Sensor()

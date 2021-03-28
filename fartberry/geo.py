@@ -4,8 +4,8 @@ from collections import namedtuple
 
 import requests
 
-from config import config
-from logger import logger
+from fartberry.config import config
+from fartberry.logger import logger
 
 COUNTRY = 'country'
 COUNTRY_CODE = 'country_code'  # two-letter country code ISO 3166-1 alpha-2, eg. US
@@ -64,5 +64,6 @@ class _Geo():
         except Exception as ex:
             logger.exception(ex)
             self.data = None
+
 
 geo = _Geo()

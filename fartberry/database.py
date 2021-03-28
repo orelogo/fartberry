@@ -3,10 +3,9 @@ from datetime import datetime
 
 import psycopg2
 
-import geo
-import pms_5003_sensor
-from config import config
-from logger import logger
+from fartberry import geo, pms_5003_sensor
+from fartberry.config import config
+from fartberry.logger import logger
 
 TABLE_GEO = 'geo'
 TABLE_AIR_QUALITY = 'air_quality'
