@@ -53,7 +53,7 @@ FRAME_LENGTH = 0x1c
 MAX_ATTEMPTS = 3
 
 
-class Pms5003Sensor():
+class _Pms5003Sensor():
     def __init__(self) -> None:
         self.connection = Serial(DEVICE, baudrate=9600, timeout=3.0)
 
@@ -111,3 +111,5 @@ class Pms5003Sensor():
 
     def _bytes_to_str(self, data: bytes) -> str:
         return ' '.join('0x{:02x}'.format(byte) for byte in data)
+
+pms_5003_sensor = _Pms5003Sensor()

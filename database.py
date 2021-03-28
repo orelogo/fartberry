@@ -13,16 +13,15 @@ TABLE_AIR_QUALITY = 'air_quality'
 TIMESTAMP = "timestamp"
 
 
-class Database():
+class _Database():
     def __init__(self) -> None:
         self.conn = psycopg2.connect(
             database=config.postgres_database, user=config.postgres_user)
         self.conn.autocommit = True
         self.cur = self.conn.cursor()
         self._create_tables()
-        self.geo = geo.Geo()
 
-        if (self.geo.data):
+        if (geo.geo.data):
             self._create_and_insert_geo()
 
     def _create_tables(self) -> None:
@@ -60,7 +59,7 @@ class Database():
                 );''')
 
         values = {TIMESTAMP: datetime.now(),
-                  **self.geo.data._asdict()}
+                  **geo.geo.data._asdict()}
 
         self.cur.execute(f'''INSERT INTO {TABLE_GEO} (
                                 {TIMESTAMP},
@@ -82,9 +81,9 @@ class Database():
                          values)
 
     def insert(self, timestamp, particulate_matter: pms_5003_sensor.ParticulateMatter) -> None:
-        if (self.geo.data):
+        if (geo.geo.data):
             values = {TIMESTAMP: timestamp,
-                      **self.geo.data._asdict(),
+                      **geo.geo.data._asdict(),
                       **particulate_matter._asdict()}
         else:
             values = {TIMESTAMP: timestamp,
@@ -130,3 +129,6 @@ class Database():
     def close(self) -> None:
         self.cur.close()
         self.conn.close()
+
+
+database = _Database()

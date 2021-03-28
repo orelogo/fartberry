@@ -34,7 +34,7 @@ GeoData = namedtuple('GeoData', [
 URL = 'http://www.ip-api.com/json'  # HTTPS not available in free version
 
 
-class Geo():
+class _Geo():
     def __init__(self):
         if (not config.is_geolocation_enabled):
             self.data = None
@@ -64,3 +64,5 @@ class Geo():
         except Exception as ex:
             logger.exception(ex)
             self.data = None
+
+geo = _Geo()

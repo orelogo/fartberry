@@ -6,39 +6,30 @@ from datetime import datetime
 from os import path
 
 from config import config
-from database import Database
+from database import database
 from logger import logger
-from pms_5003_sensor import Pms5003Sensor
+from pms_5003_sensor import pms_5003_sensor
 
 
-class Fartberry:
-    def __init__(self):
-        signal.signal(signal.SIGINT, self._signal_handler)  # handle ctrl-c
-        self.database = Database()
-        self.particulate_matter_sensor = Pms5003Sensor()
-
-    def _signal_handler(self, signal, frame):
-        self.database.close()
-        logger.info('Closing program')
-        print('Closing program')
-        sys.exit(0)
-
-    def run(self):
-        while True:
-            try:
-                particulate_matter = self.particulate_matter_sensor.get_particulate_matter()
-                timestamp = datetime.now()
-                logger.info(particulate_matter)
-                self.database.insert(timestamp, particulate_matter)
-            except Exception as e:
-                logger.exception(e)
-
-            time.sleep(config.polling_frequency_in_sec)
+def signal_handler(signal, frame):
+    database.close()
+    logger.info('Closing program')
+    sys.exit(0)
 
 
 def main():
-    fartberry = Fartberry()
-    fartberry.run()
+    signal.signal(signal.SIGINT, signal_handler)  # handle ctrl-c
+
+    while True:
+        try:
+            particulate_matter = pms_5003_sensor.get_particulate_matter()
+            timestamp = datetime.now()
+            logger.info(particulate_matter)
+            database.insert(timestamp, particulate_matter)
+        except Exception as e:
+            logger.exception(e)
+
+        time.sleep(config.polling_frequency_in_sec)
 
 
 if __name__ == '__main__':
