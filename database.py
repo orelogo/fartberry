@@ -5,7 +5,7 @@ import psycopg2
 
 import geo
 import pms_5003_sensor
-from config import Config
+from config import config
 
 TABLE_GEO = 'geo'
 TABLE_AIR_QUALITY = 'air_quality'
@@ -14,15 +14,14 @@ TIMESTAMP = "timestamp"
 
 class Database():
     def __init__(self) -> None:
-        self.config = Config()
         self.conn = psycopg2.connect(
-            database=self.config.postgres_database, user=self.config.postgres_user)
+            database=config.postgres_database, user=config.postgres_user)
         self.conn.autocommit = True
         self.cur = self.conn.cursor()
         self._create_tables()
-        self.geo = geo.Geo() if self.config.is_geolocation_enabled else None
+        self.geo = geo.Geo()
 
-        if (self.geo):
+        if (self.geo.data):
             self._create_and_insert_geo()
 
     def _create_tables(self) -> None:
@@ -59,31 +58,30 @@ class Database():
                         REFERENCES {TABLE_GEO} ({geo.LAT}, {geo.LON})
                 );''')
 
-        if (self.geo.data):
-            values = {TIMESTAMP: datetime.now(),
-                      **self.geo.data._asdict()}
+        values = {TIMESTAMP: datetime.now(),
+                  **self.geo.data._asdict()}
 
-            self.cur.execute(f'''INSERT INTO {TABLE_GEO} (
-                                    {TIMESTAMP},
-                                    {geo.LAT},
-                                    {geo.LON},
-                                    {geo.COUNTRY_CODE},
-                                    {geo.REGION_NAME},
-                                    {geo.CITY},
-                                    {geo.ZIP})
-                                VALUES (
-                                    %(timestamp)s,
-                                    %(lat)s,
-                                    %(lon)s,
-                                    %(country_code)s,
-                                    %(region_name)s,
-                                    %(city)s,
-                                    %(zip)s
-                                ) ON CONFLICT DO NOTHING;''',
-                             values)
+        self.cur.execute(f'''INSERT INTO {TABLE_GEO} (
+                                {TIMESTAMP},
+                                {geo.LAT},
+                                {geo.LON},
+                                {geo.COUNTRY_CODE},
+                                {geo.REGION_NAME},
+                                {geo.CITY},
+                                {geo.ZIP})
+                            VALUES (
+                                %(timestamp)s,
+                                %(lat)s,
+                                %(lon)s,
+                                %(country_code)s,
+                                %(region_name)s,
+                                %(city)s,
+                                %(zip)s
+                            ) ON CONFLICT DO NOTHING;''',
+                         values)
 
     def insert(self, timestamp, particulate_matter: pms_5003_sensor.ParticulateMatter) -> None:
-        if (self.geo and self.geo.data):
+        if (self.geo.data):
             values = {TIMESTAMP: timestamp,
                       **self.geo.data._asdict(),
                       **particulate_matter._asdict()}

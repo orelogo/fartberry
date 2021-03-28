@@ -4,6 +4,8 @@ from collections import namedtuple
 
 import requests
 
+from config import config
+
 COUNTRY = 'country'
 COUNTRY_CODE = 'country_code'  # two-letter country code ISO 3166-1 alpha-2, eg. US
 REGION = 'region'  # region/state short code, eg. CA for California
@@ -33,6 +35,11 @@ URL = 'http://www.ip-api.com/json'  # HTTPS not available in free version
 
 class Geo():
     def __init__(self):
+        if (not config.is_geolocation_enabled):
+            self.data = None
+            logging.info('Geolocation disabled')
+            return
+
         try:
             resp = requests.get(URL)
             resp.raise_for_status()

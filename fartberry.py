@@ -6,7 +6,7 @@ import time
 from datetime import datetime
 from os import path
 
-from config import Config
+from config import config
 from database import Database
 from pms_5003_sensor import Pms5003Sensor
 
@@ -14,7 +14,6 @@ from pms_5003_sensor import Pms5003Sensor
 class Fartberry:
     def __init__(self):
         signal.signal(signal.SIGINT, self._signal_handler)  # handle ctrl-c
-        self.config = Config()
         self.database = Database()
         self.particulate_matter_sensor = Pms5003Sensor()
 
@@ -37,7 +36,7 @@ class Fartberry:
             except Exception as e:
                 logging.exception(e)
 
-            time.sleep(self.config.polling_frequency_in_sec)
+            time.sleep(config.polling_frequency_in_sec)
 
 
 def main():
