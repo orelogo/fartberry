@@ -13,10 +13,10 @@ from fartberry.pms_5003_sensor import pms_5003_sensor
 
 
 class _Fartberry:
-    def __init__(self):
+    def __init__(self) -> None:
         signal.signal(signal.SIGINT, self._signal_handler)  # handle ctrl-c
 
-    def run(self):
+    def run(self) -> None:
         geolocation = geo.get_geolocation()
         database.create_air_quality_table()
         if geolocation:
@@ -33,7 +33,7 @@ class _Fartberry:
 
             time.sleep(config.polling_frequency_in_sec)
 
-    def _signal_handler(self, signal, frame):
+    def _signal_handler(self, signal, frame) -> None:
         database.close()
         logger.info('Closing program')
         sys.exit(0)

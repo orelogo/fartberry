@@ -81,7 +81,7 @@ class _Pms5003Sensor():
 
     def _read_sensor(self) -> bytes:
         # assuming that we can't be sure where in the byte stream the read starts,
-        # this is the minimum number of bytes required to ensure we can capute an
+        # this is the minimum number of bytes required to ensure we can capture an
         # entire valid frame of data
         bytes_to_read = BYTE_COUNT * 2 - 1
 

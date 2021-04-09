@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from datetime import datetime
+from typing import Optional
 
 import psycopg2
 
@@ -41,7 +42,7 @@ class _Database():
                         REFERENCES {TABLE_GEO} ({geo.LAT}, {geo.LON})
                 );''')
 
-    def insert(self, timestamp, particulate_matter: pms_5003_sensor.ParticulateMatter, geolocation: geo.GeoData) -> None:
+    def insert(self, timestamp, particulate_matter: pms_5003_sensor.ParticulateMatter, geolocation: Optional[geo.Geolocation]) -> None:
         if geolocation:
             values = {TIMESTAMP: timestamp,
                       **geolocation._asdict(),
@@ -87,7 +88,7 @@ class _Database():
                         ); ''', values)
         logger.debug('Air quality inserted into database')
 
-    def create_geolocation_table_and_insert(self, geolocation: geo.GeoData) -> None:
+    def create_geolocation_table_and_insert(self, geolocation: geo.Geolocation) -> None:
         self._cur.execute(f'''CREATE TABLE IF NOT EXISTS {TABLE_GEO} (
                             {TIMESTAMP} TIMESTAMP WITH TIME ZONE,
                             {geo.LAT} FLOAT4,

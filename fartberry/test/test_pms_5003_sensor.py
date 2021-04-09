@@ -51,13 +51,12 @@ class TestPms5003Sensor(TestCase):
 
     @mock.patch('fartberry.pms_5003_sensor.pms_5003_sensor.connection')
     def test_read_sensor_fail_empty(self, mock_connection):
-        mock_connection.read.return_value=bytes()
+        mock_connection.read.return_value = bytes()
 
         with self.assertRaises(IOError):
-            _actual_bytes=pms_5003_sensor._read_sensor()
+            _actual_bytes = pms_5003_sensor._read_sensor()
 
         mock_connection.read.assert_called_once()
-
 
     @mock.patch('fartberry.pms_5003_sensor.pms_5003_sensor.connection')
     def test_read_sensor_fail_checksum(self, mock_connection):
@@ -72,7 +71,7 @@ class TestPms5003Sensor(TestCase):
             0x00, 0x0d, 0x00, 0x06, 0x00, 0x04, 0x97])
 
         with self.assertRaises(IOError):
-            _actual_bytes=pms_5003_sensor._read_sensor()
+            _actual_bytes = pms_5003_sensor._read_sensor()
 
         mock_connection.read.assert_called_once()
 

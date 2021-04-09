@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from collections import namedtuple
+from typing import Optional
 
 import requests
 
@@ -18,7 +19,7 @@ LON = 'lon'
 TIMEZONE = 'timezone'  # eg. America/Los_Angeles
 IPV4 = 'ipv4'
 
-GeoData = namedtuple('GeoData', [
+Geolocation = namedtuple('Geolocation', [
     COUNTRY,
     COUNTRY_CODE,
     REGION,
@@ -35,26 +36,26 @@ URL = 'http://www.ip-api.com/json'  # HTTPS not available in free version
 
 
 class _Geo():
-    def __init__(self):
-        self._data = None
+    def __init__(self) -> None:
+        self._data: Optional[Geolocation] = None
 
-    def get_geolocation(self) -> GeoData:
+    def get_geolocation(self) -> Optional[Geolocation]:
         if not config.is_geolocation_enabled:
             self._data = None
             logger.info('Geolocation disabled')
             return self._data
-        
+
         if not self._data:
             self._data = self._request_geolocation()
-        
+
         return self._data
 
-    def _request_geolocation(self) -> GeoData:
+    def _request_geolocation(self) -> Optional[Geolocation]:
         try:
             resp = requests.get(URL)
             resp.raise_for_status()
             json = resp.json()
-            geo_data = GeoData(
+            geolocation = Geolocation(
                 **{
                     COUNTRY: json['country'],
                     COUNTRY_CODE: json['countryCode'],
@@ -68,11 +69,12 @@ class _Geo():
                     IPV4: json['query'],
                 }
             )
-            logger.info(geo_data)
-            return geo_data
+            logger.info(geolocation)
+            return geolocation
 
         except Exception as ex:
             logger.exception(ex)
-            self.data = None
+            return None
+
 
 geo = _Geo()
