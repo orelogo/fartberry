@@ -36,16 +36,25 @@ URL = 'http://www.ip-api.com/json'  # HTTPS not available in free version
 
 class _Geo():
     def __init__(self):
-        if (not config.is_geolocation_enabled):
-            self.data = None
-            logger.info('Geolocation disabled')
-            return
+        self._data = None
 
+    def get_geolocation(self) -> GeoData:
+        if not config.is_geolocation_enabled:
+            self._data = None
+            logger.info('Geolocation disabled')
+            return self._data
+        
+        if not self._data:
+            self._data = self._request_geolocation()
+        
+        return self._data
+
+    def _request_geolocation(self) -> GeoData:
         try:
             resp = requests.get(URL)
             resp.raise_for_status()
             json = resp.json()
-            self.data = GeoData(
+            geo_data = GeoData(
                 **{
                     COUNTRY: json['country'],
                     COUNTRY_CODE: json['countryCode'],
@@ -59,11 +68,11 @@ class _Geo():
                     IPV4: json['query'],
                 }
             )
-            logger.info(self.data)
+            logger.info(geo_data)
+            return geo_data
 
         except Exception as ex:
             logger.exception(ex)
             self.data = None
-
 
 geo = _Geo()

@@ -7,6 +7,7 @@ from os import path
 
 from fartberry.config import config
 from fartberry.database import database
+from fartberry.geo import geo
 from fartberry.logger import logger
 from fartberry.pms_5003_sensor import pms_5003_sensor
 
@@ -16,12 +17,17 @@ class _Fartberry:
         signal.signal(signal.SIGINT, self._signal_handler)  # handle ctrl-c
 
     def run(self):
+        geolocation = geo.get_geolocation()
+        database.create_air_quality_table()
+        if geolocation:
+            database.create_geolocation_table_and_insert(geolocation)
+
         while True:
             try:
                 particulate_matter = pms_5003_sensor.get_particulate_matter()
                 timestamp = datetime.now()
                 logger.info(particulate_matter)
-                database.insert(timestamp, particulate_matter)
+                database.insert(timestamp, particulate_matter, geolocation)
             except Exception as e:
                 logger.exception(e)
 
