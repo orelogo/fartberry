@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import struct
 from collections import namedtuple
 
 from serial import Serial
@@ -94,17 +95,8 @@ class _Pms5003Sensor():
         trimmed_data = self._get_in_frame_data(data)
         logger.debug(f'Trimmed data: {self._bytes_to_str(trimmed_data)}')
 
-        check_sum_expected = int.from_bytes(
-            trimmed_data[30:32], byteorder='big')
-        check_sum_calculated = 0
-        for i in range(0, BYTE_COUNT - 2):
-            check_sum_calculated += trimmed_data[i]
-
-        if (check_sum_calculated == check_sum_expected):
+        if self._is_check_sum_valid(trimmed_data):
             return trimmed_data
-        else:
-            raise IOError(
-                f'Check sum failed: {self._bytes_to_str(trimmed_data)}')
 
     def _get_in_frame_data(self, data: bytes) -> bytes:
         starting_sequence = bytes(
@@ -115,6 +107,27 @@ class _Pms5003Sensor():
 
     def _bytes_to_str(self, data: bytes) -> str:
         return ' '.join('0x{:02x}'.format(byte) for byte in data)
+
+    def _is_check_sum_valid(self, data: bytes) -> bool:
+        check_sum_expected = int.from_bytes(
+            data[30:32], byteorder='big')
+        check_sum_calculated = 0
+        for i in range(0, BYTE_COUNT - 2):
+            check_sum_calculated += data[i]
+
+        if (check_sum_calculated == check_sum_expected):
+            return data
+        else:
+            check_sum_calculated_bytes = struct.pack(
+                '>h', check_sum_calculated)
+            check_sum_expected_bytes = struct.pack(
+                '>h', check_sum_expected)
+            raise IOError(
+                (f'Check sum failed.\n'
+                    f'Calculated checksum: {self._bytes_to_str(check_sum_calculated_bytes)}.\n'
+                    f'Expected checksum: {self._bytes_to_str(check_sum_expected_bytes)}.\n'
+                    f'Trimmed data: {self._bytes_to_str(data)}')
+            )
 
 
 pms_5003_sensor = _Pms5003Sensor()
