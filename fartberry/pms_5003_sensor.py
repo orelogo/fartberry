@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import struct
-from collections import namedtuple
+from typing import NamedTuple
 
 from serial import Serial
 
@@ -31,19 +31,19 @@ PARTICLES_5 = 'particles_5'
 # number of particles with diameter >10.0 μm in 0.1 L (0.0001 m^3) of air
 PARTICLES_10 = 'particles_10'
 
-ParticulateMatter = namedtuple('ParticulateMatter', [
-    PM1_STANDARD,
-    PM25_STANDARD,
-    PM10_STANDARD,
-    PM1_AMBIENT,
-    PM25_AMBIENT,
-    PM10_AMBIENT,
-    PARTICLES_03,
-    PARTICLES_05,
-    PARTICLES_1,
-    PARTICLES_25,
-    PARTICLES_5,
-    PARTICLES_10,
+ParticulateMatter = NamedTuple('ParticulateMatter', [
+    (PM1_STANDARD, int),
+    (PM25_STANDARD, int),
+    (PM10_STANDARD, int),
+    (PM1_AMBIENT, int),
+    (PM25_AMBIENT, int),
+    (PM10_AMBIENT, int),
+    (PARTICLES_03, int),
+    (PARTICLES_05, int),
+    (PARTICLES_1, int),
+    (PARTICLES_25, int),
+    (PARTICLES_5, int),
+    (PARTICLES_10, int),
 ])
 
 DEVICE = '/dev/ttyAMA0'
@@ -51,7 +51,6 @@ BYTE_COUNT = 32
 FIRST_BYTE = 0x42
 SECOND_BYTE = 0x4d
 FRAME_LENGTH = 0x1c
-MAX_ATTEMPTS = 3
 
 
 class _Pms5003Sensor():
@@ -81,10 +80,10 @@ class _Pms5003Sensor():
         return particulate_matter
 
     def _read_sensor(self) -> bytes:
-        # assuming that we can't be sure where in the byte stream the read starts,
-        # this is the minimum number of bytes required to ensure we can capture an
-        # entire valid frame of data
-        bytes_to_read = BYTE_COUNT * 2 - 1
+        # We cannot be sure where in the byte stream the read starts and sometimes
+        # the initial dta is invalid. This buffer gives us a better chance of receiving
+        # a full valid stream
+        bytes_to_read = BYTE_COUNT * 3
 
         data = self.connection.read(bytes_to_read)
         logger.debug(f'Raw data: {self._bytes_to_str(data)}')
@@ -95,8 +94,8 @@ class _Pms5003Sensor():
         trimmed_data = self._get_in_frame_data(data)
         logger.debug(f'Trimmed data: {self._bytes_to_str(trimmed_data)}')
 
-        if self._is_check_sum_valid(trimmed_data):
-            return trimmed_data
+        self._validate_check_sum(trimmed_data)
+        return trimmed_data
 
     def _get_in_frame_data(self, data: bytes) -> bytes:
         starting_sequence = bytes(
@@ -105,19 +104,16 @@ class _Pms5003Sensor():
         end = start + BYTE_COUNT
         return data[start:end]
 
-    def _bytes_to_str(self, data: bytes) -> str:
-        return ' '.join('0x{:02x}'.format(byte) for byte in data)
-
-    def _is_check_sum_valid(self, data: bytes) -> bool:
-        check_sum_expected = int.from_bytes(
-            data[30:32], byteorder='big')
+    def _validate_check_sum(self, data: bytes) -> None:
         check_sum_calculated = 0
         for i in range(0, BYTE_COUNT - 2):
             check_sum_calculated += data[i]
 
-        if (check_sum_calculated == check_sum_expected):
-            return data
-        else:
+        check_sum_expected = int.from_bytes(
+            data[30:32], byteorder='big')
+
+        if check_sum_calculated != check_sum_expected:
+            # convert int to 2 bytes, big endian, for easier comparison
             check_sum_calculated_bytes = struct.pack(
                 '>h', check_sum_calculated)
             check_sum_expected_bytes = struct.pack(
@@ -128,6 +124,9 @@ class _Pms5003Sensor():
                     f'Expected checksum: {self._bytes_to_str(check_sum_expected_bytes)}.\n'
                     f'Trimmed data: {self._bytes_to_str(data)}')
             )
+
+    def _bytes_to_str(self, data: bytes) -> str:
+        return ' '.join('0x{:02x}'.format(byte) for byte in data)
 
 
 pms_5003_sensor = _Pms5003Sensor()

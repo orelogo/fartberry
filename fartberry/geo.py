@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
-from collections import namedtuple
-from typing import Optional
+from typing import NamedTuple, Optional
 
 import requests
 
@@ -19,17 +18,17 @@ LON = 'lon'
 TIMEZONE = 'timezone'  # eg. America/Los_Angeles
 IPV4 = 'ipv4'
 
-Geolocation = namedtuple('Geolocation', [
-    COUNTRY,
-    COUNTRY_CODE,
-    REGION,
-    REGION_NAME,
-    CITY,
-    ZIP,
-    LAT,
-    LON,
-    TIMEZONE,
-    IPV4
+Geolocation = NamedTuple('Geolocation', [
+    (COUNTRY, str),
+    (COUNTRY_CODE, str),
+    (REGION, str),
+    (REGION_NAME, str),
+    (CITY, str),
+    (ZIP, str),
+    (LAT, float),
+    (LON, float),
+    (TIMEZONE, str),
+    (IPV4, str),
 ])
 
 URL = 'http://www.ip-api.com/json'  # HTTPS not available in free version
