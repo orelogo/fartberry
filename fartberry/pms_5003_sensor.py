@@ -18,17 +18,17 @@ PM1_AMBIENT = 'pm1_ambient'
 PM25_AMBIENT = 'pm25_ambient'
 # PM 10 concentration in μg/m^3, in the current ambient conditions
 PM10_AMBIENT = 'pm10_ambient'
-# number of particles with diameter >0.3 μm in 0.1 L (0.0001 m^3) of air
+# Number of particles with diameter >0.3 μm in 0.1 L (0.0001 m^3) of air
 PARTICLES_03 = 'particles_03'
-# number of particles with diameter >0.5 μm in 0.1 L (0.0001 m^3) of air
+# Number of particles with diameter >0.5 μm in 0.1 L (0.0001 m^3) of air
 PARTICLES_05 = 'particles_05'
-# number of particles with diameter >1.0 μm in 0.1 L (0.0001 m^3) of air
+# Number of particles with diameter >1.0 μm in 0.1 L (0.0001 m^3) of air
 PARTICLES_1 = 'particles_1'
-# number of particles with diameter >2.5 μm in 0.1 L (0.0001 m^3) of air
+# Number of particles with diameter >2.5 μm in 0.1 L (0.0001 m^3) of air
 PARTICLES_25 = 'particles_25'
-# number of particles with diameter >5.0 μm in 0.1 L (0.0001 m^3) of air
+# Number of particles with diameter >5.0 μm in 0.1 L (0.0001 m^3) of air
 PARTICLES_5 = 'particles_5'
-# number of particles with diameter >10.0 μm in 0.1 L (0.0001 m^3) of air
+# Number of particles with diameter >10.0 μm in 0.1 L (0.0001 m^3) of air
 PARTICLES_10 = 'particles_10'
 
 ParticulateMatter = NamedTuple('ParticulateMatter', [
@@ -81,7 +81,7 @@ class _Pms5003Sensor():
 
     def _read_sensor(self) -> bytes:
         # We cannot be sure where in the byte stream the read starts and sometimes
-        # the initial dta is invalid. This buffer gives us a better chance of receiving
+        # the initial data is invalid. This buffer gives us a better chance of receiving
         # a full valid stream
         bytes_to_read = BYTE_COUNT * 3
 

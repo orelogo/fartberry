@@ -4,7 +4,7 @@ from typing import Optional
 
 import psycopg2
 
-from fartberry import geo, pms_5003_sensor
+from fartberry import bme_680_sensor, geo, pms_5003_sensor
 from fartberry.config import config
 from fartberry.logger import logger
 
@@ -26,6 +26,9 @@ class _Database():
                     {TIMESTAMP} TIMESTAMP WITH TIME ZONE,
                     {geo.LAT} FLOAT4,
                     {geo.LON} FLOAT4,
+                    {bme_680_sensor.TEMPERATURE} FLOAT4,
+                    {bme_680_sensor.HUMIDITY} FLOAT4,
+                    {bme_680_sensor.PRESSURE} FLOAT4,
                     {pms_5003_sensor.PM1_STANDARD} INT2,
                     {pms_5003_sensor.PM25_STANDARD} INT2,
                     {pms_5003_sensor.PM10_STANDARD} INT2,
@@ -42,21 +45,31 @@ class _Database():
                         REFERENCES {TABLE_GEO} ({geo.LAT}, {geo.LON})
                 );''')
 
-    def insert(self, timestamp, particulate_matter: pms_5003_sensor.ParticulateMatter, geolocation: Optional[geo.Geolocation]) -> None:
+    def insert(self,
+               timestamp,
+               gas_properties: bme_680_sensor.GasProperties,
+               particulate_matter: pms_5003_sensor.ParticulateMatter,
+               geolocation: Optional[geo.Geolocation]) -> None:
+
         if geolocation:
             values = {TIMESTAMP: timestamp,
                       **geolocation._asdict(),
+                      **gas_properties._asdict(),
                       **particulate_matter._asdict()}
         else:
             values = {TIMESTAMP: timestamp,
                       geo.LAT: None,
                       geo.LON: None,
+                      **gas_properties._asdict(),
                       **particulate_matter._asdict()}
 
         self._cur.execute(f'''INSERT INTO {TABLE_AIR_QUALITY} (
                             {TIMESTAMP},
                             {geo.LAT},
                             {geo.LON},
+                            {bme_680_sensor.TEMPERATURE},
+                            {bme_680_sensor.HUMIDITY},
+                            {bme_680_sensor.PRESSURE},
                             {pms_5003_sensor.PM1_STANDARD},
                             {pms_5003_sensor.PM25_STANDARD},
                             {pms_5003_sensor.PM10_STANDARD},
@@ -73,6 +86,9 @@ class _Database():
                             %(timestamp)s,
                             %(lat)s,
                             %(lon)s,
+                            %(temperature)s,
+                            %(humidity)s,
+                            %(pressure)s,
                             %(pm1_standard)s,
                             %(pm25_standard)s,
                             %(pm10_standard)s,

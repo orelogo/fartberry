@@ -3,8 +3,8 @@ import signal
 import sys
 import time
 from datetime import datetime
-from os import path
 
+from fartberry.bme_680_sensor import bme_680_sensor
 from fartberry.config import config
 from fartberry.database import database
 from fartberry.geo import geo
@@ -24,10 +24,12 @@ class _Fartberry:
 
         while True:
             try:
+                gas_properties = bme_680_sensor.get_gas_properties()
+                logger.info(gas_properties)
                 particulate_matter = pms_5003_sensor.get_particulate_matter()
-                timestamp = datetime.now()
                 logger.info(particulate_matter)
-                database.insert(timestamp, particulate_matter, geolocation)
+                timestamp = datetime.now()
+                database.insert(timestamp, gas_properties, particulate_matter, geolocation)
             except Exception as e:
                 logger.exception(e)
 
