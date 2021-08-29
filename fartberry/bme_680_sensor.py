@@ -22,7 +22,7 @@ class _BME680Sensor():
 
         try:
             self.sensor = bme680.BME680(bme680.I2C_ADDR_PRIMARY)
-        except IOError:
+        except RuntimeError:
             self.sensor = bme680.BME680(bme680.I2C_ADDR_SECONDARY)
 
         # These oversampling settings can be tweaked to

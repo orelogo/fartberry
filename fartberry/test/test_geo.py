@@ -1,9 +1,7 @@
 
 #!/usr/bin/env python3
-import json
 from unittest import TestCase, mock
 
-import requests
 from fartberry.geo import *
 
 
