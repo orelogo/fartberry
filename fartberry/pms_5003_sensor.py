@@ -12,11 +12,11 @@ PM1_STANDARD = 'pm1_standard'
 PM25_STANDARD = 'pm25_standard'
 # PM 10 concentration in μg/m^3, corrected to standard atmophere conditions
 PM10_STANDARD = 'pm10_standard'
-# PM 10 concentration in μg/m^3, in the current ambient conditions
+# PM 1.0 concentration in μg/m^3, in the current ambient conditions
 PM1_AMBIENT = 'pm1_ambient'
-# PM 10 concentration in μg/m^3, in the current ambient conditions
+# PM 2.5 concentration in μg/m^3, in the current ambient conditions
 PM25_AMBIENT = 'pm25_ambient'
-# PM 10 concentration in μg/m^3, in the current ambient conditions
+# PM 10  concentration in μg/m^3, in the current ambient conditions
 PM10_AMBIENT = 'pm10_ambient'
 # Number of particles with diameter >0.3 μm in 0.1 L (0.0001 m^3) of air
 PARTICLES_03 = 'particles_03'

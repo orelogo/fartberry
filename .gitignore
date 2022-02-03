@@ -1,3 +1,4 @@
-fartberry.log
-.mypy_cache/
+*.pyc
 __pycache__/
+.mypy_cache/
+fartberry*.log
