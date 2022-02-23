@@ -10,6 +10,7 @@ from fartberry.logger import logger
 
 TABLE_GEO = 'geolocation'
 TABLE_AIR_QUALITY = 'air_quality'
+INDEX_AIR_QUALITY = 'air_quality_idx'
 TIMESTAMP = "timestamp"
 
 
@@ -44,6 +45,9 @@ class _Database():
                     FOREIGN KEY ({geo.LAT}, {geo.LON})
                         REFERENCES {TABLE_GEO} ({geo.LAT}, {geo.LON})
                 );''')
+
+        self._cur.execute(f'''CREATE INDEX IF NOT EXISTS {INDEX_AIR_QUALITY}
+                    ON {TABLE_AIR_QUALITY}({TIMESTAMP});''')
 
     def insert(self,
                timestamp,
